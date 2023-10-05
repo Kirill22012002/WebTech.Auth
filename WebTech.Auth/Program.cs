@@ -59,6 +59,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.ApplyMigrations();
+app.SeedDatabase();
 
 app.UseCors(options =>
 {

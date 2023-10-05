@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using WebTech.Auth.Data.Context;
+using WebTech.Auth.Data.DataSeeder;
 
 namespace WebTech.Auth.Extension;
 
@@ -35,5 +36,12 @@ public static class DbExtension
 
         var persistedGrantDbContext = services.GetRequiredService<PersistedGrantDbContext>();
         persistedGrantDbContext.Database.Migrate();
+    }
+
+    public static void SeedDatabase(this IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+        var dbSeed = scope.ServiceProvider.GetService<IDataSeeder>();
+        dbSeed?.SeedAsync().Wait();
     }
 }
