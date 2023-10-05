@@ -22,7 +22,7 @@ public static class DbExtension
             options.UseNpgsql(connection));
     }
 
-    /*public static void ApplyMigrations(this IApplicationBuilder app)
+    public static void ApplyMigrations(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
         var services = scope.ServiceProvider;
@@ -35,5 +35,5 @@ public static class DbExtension
 
         var persistedGrantDbContext = services.GetRequiredService<PersistedGrantDbContext>();
         persistedGrantDbContext.Database.Migrate();
-    }*/
+    }
 }

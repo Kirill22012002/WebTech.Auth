@@ -1,9 +1,6 @@
-using Duende.IdentityServer.EntityFramework.DbContexts;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using WebTech.Auth;
-using WebTech.Auth.Data.Context;
 using WebTech.Auth.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,10 +58,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-ApplyMigrations(app);
+app.ApplyMigrations();
 
-/*app.ApplyMigrations();
-*/
 app.UseCors(options =>
 {
     options.AllowAnyOrigin();
@@ -80,18 +75,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-static void ApplyMigrations(IApplicationBuilder app)
-{
-    using var scope = app.ApplicationServices.CreateScope();
-    var services = scope.ServiceProvider;
-
-    var context = services.GetRequiredService<AccessDbContext>();
-    context.Database.Migrate();
-
-    var configurationDbContext = services.GetRequiredService<ConfigurationDbContext>();
-    configurationDbContext.Database.Migrate();
-
-    var persistedGrantDbContext = services.GetRequiredService<PersistedGrantDbContext>();
-    persistedGrantDbContext.Database.Migrate();
-}
