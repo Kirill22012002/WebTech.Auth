@@ -1,0 +1,19 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    container_name: postgres   
+    environment:
+      - POSTGRES_USER=webtech_user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=IdentityDb
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=web.tech.auth@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=1234567890
+    ports:
+      - "5052:80"
