@@ -15,12 +15,14 @@ public static class IdentityExtension
         builder.Services.AddIdentityServer()
             .AddConfigurationStore(options =>
             {
+                //dotnet ef migrations add InitialCreate --context ConfigurationDbContext --output-dir Data/Migrations/ConfigurationStore
                 options.ConfigureDbContext = b =>
                     b.UseNpgsql(builder.GetConnectionString("ConfigurationStore"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
             })
             .AddOperationalStore(options =>
             {
+                //dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --output-dir Data/Migrations/PersistedGrant
                 options.ConfigureDbContext = b =>
                     b.UseNpgsql(builder.GetConnectionString("OperationalStore"),
                         sql => sql.MigrationsAssembly(migrationsAssembly));
@@ -42,6 +44,7 @@ public static class IdentityExtension
             config.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
             config.Password.RequireLowercase = false;
             config.User.RequireUniqueEmail = true;
+            config.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
         })
             .AddEntityFrameworkStores<AccessDbContext>()
             .AddDefaultTokenProviders();
@@ -49,11 +52,13 @@ public static class IdentityExtension
 
     private static string GetConnectionString(this WebApplicationBuilder builder, string connStringName)
     {
-        if (builder.Services == null) throw /*new CriticalServerException(nameof(builder.Services));*/ new Exception();
+/*        if (builder.Services == null) throw new CriticalServerException(nameof(builder.Services));
+*/
+        var conStrBuilder = new NpgsqlConnectionStringBuilder(
+                    builder.Configuration.GetConnectionString(connStringName));
 
-        var connStrBuilder = new NpgsqlConnectionStringBuilder(
-            builder.Configuration.GetConnectionString(connStringName));
+        conStrBuilder.Password = "password";
 
-        return connStrBuilder.ConnectionString;
+        return conStrBuilder.ConnectionString;
     }
 }
