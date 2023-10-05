@@ -14,6 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDependencies();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDatabase(builder.Configuration);
+builder.Services.AddAutoMapper();
 
 builder.ConfigureAspIdentity();
 builder.ConfigureIdentityServer();
