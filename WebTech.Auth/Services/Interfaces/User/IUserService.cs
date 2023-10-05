@@ -4,5 +4,5 @@ namespace WebTech.Auth.Services.Interfaces.User;
 
 public interface IUserService
 {
-    public Task<IEnumerable<UserViewModel>> GetUsersAsync();
+    public Task<IEnumerable<UserViewModel>> GetUsersAsync(string conditions);
 }
