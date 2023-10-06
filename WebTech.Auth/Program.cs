@@ -1,6 +1,7 @@
 using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using WebTech.Auth;
+using WebTech.Auth.ErrorHandler;
 using WebTech.Auth.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -75,5 +76,6 @@ app.UseIdentityServer();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseErrorHandler();
 
 app.Run();

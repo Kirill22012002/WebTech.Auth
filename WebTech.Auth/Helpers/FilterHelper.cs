@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using WebTech.Auth.Models.FilterModels;
 
 namespace WebTech.Auth.Helpers;
@@ -76,7 +75,7 @@ public static class FilterHelper
         return Expression.Lambda<Func<T, bool>>(predicate, param);
     }
 
-    private static MemberExpression GetPropertyExpression(ParameterExpression param, string propertyName)
+    public static MemberExpression GetPropertyExpression(ParameterExpression param, string propertyName)
     {
         var parts = propertyName.Split('.');
         var propertyAccess = Expression.Property(param, parts[0]);

@@ -1,40 +1,79 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using WebTech.Auth.Data.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebTech.Auth.Models.Inputs;
 using WebTech.Auth.Services.Interfaces.User;
+using WebTech.Auth.Controllers.Base;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using WebTech.Auth.Models.Dtos;
 
 namespace WebTech.Auth.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class UserController : ControllerBase
+public class UserController : BaseController
 {
     private readonly IUserService _userService;
 
-    public readonly UserManager<ApplicationUser> _userManager;
-    public readonly RoleManager<IdentityRole> _roleManager;
-
     public UserController(
-        IUserService userService,
-        UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager)
+        IUserService userService)
     {
         _userService = userService;
-        _userManager = userManager;
-        _roleManager = roleManager;
     }
 
 
     [HttpGet]
-    public async Task<IActionResult> GetAllUsers(string conditions)
+    public async Task<IActionResult> GetUsers([FromQuery] GetUsersDto usersDto)
     {
-        var users = await _userService.GetUsersAsync(conditions);
+        var users = await _userService.GetUsersAsync(usersDto);
 
-        if(users == null)
+        if (users == null)
         {
             return NotFound();
         }
 
         return Ok(users);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetById([FromQuery] string userId)
+    {
+        var user = await _userService.GetUserByIdAsync(userId);
+        
+        if(user == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(user);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserInput userInput)
+    {
+        var result = await _userService.CreateUserAsync(userInput);
+
+        if (!result.Success)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Ok(result.UserId);
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> ChangeUserInfo([FromBody] ChangeUserInfoInput userInfoInput)
+    {
+        if (!ModelState.IsValid)
+        {
+            IEnumerable<ModelError> allErrors = ModelState.Values.SelectMany(v => v.Errors);
+            return BadRequest(allErrors.Select(x => x.ErrorMessage));
+        }
+
+        var updatingResult = await _userService.ChangeUserInfoAsync(userInfoInput);
+        if (updatingResult.Succeeded)
+        {
+            return Ok();
+        }
+
+        return BadRequest(new { error_message = updatingResult.Errors.Select(x => x.Code) });
     }
 }
