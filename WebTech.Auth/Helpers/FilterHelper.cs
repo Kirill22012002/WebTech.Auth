@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using WebTech.Auth.ErrorHandler.CustomExceptions;
 using WebTech.Auth.Models.FilterModels;
 
 namespace WebTech.Auth.Helpers;
@@ -37,22 +36,38 @@ public static class FilterHelper
     private static Expression<Func<T, bool>> CombineExpressions<T>(
         List<FilterDefinition> filters, string conditions)
     {
-        var filterExpressions = new Expression<Func<T, bool>>[filters.Count];
-
-        for (int i = 0; i < filters.Count; i++)
+        if(filters.Count() > 1)
         {
-            filterExpressions[i] = GetFilterExpression<T>(filters[i]);
-        }
+            var filterExpressions = new Expression<Func<T, bool>>[filters.Count];
+            
+            for (int i = 0; i < filters.Count; i++)
+            {
+                filterExpressions[i] = GetFilterExpression<T>(filters[i]);
+            }
 
-        if (conditions.Contains("~or~"))
-        {
-            return filterExpressions[0].Or(filterExpressions[1]);
+            if (conditions.Contains("~or~"))
+            {
+                for (int i = 1; i < filterExpressions.Length; i++)
+                {
+                    filterExpressions[0] = filterExpressions[i - 1].Or(filterExpressions[i]);
+                }
+
+                return filterExpressions[0];
+            }
+            else
+            {
+                for (int i = 0; i < filterExpressions.Length; i++)
+                {
+                    filterExpressions[0] = filterExpressions[i].And(filterExpressions[i + 1]);
+                }
+
+                return filterExpressions[0];
+            }
         }
         else
         {
-            return filterExpressions[0].And(filterExpressions[1]);
+            return GetFilterExpression<T>(filters[0]);
         }
-        throw new CriticalServerException();
     }
 
     private static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
