@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using WebTech.Auth.Data.Models;
 using WebTech.Auth.ErrorHandler.CustomExceptions;
 using WebTech.Auth.Helpers;
@@ -35,12 +38,17 @@ public class UserService : IUserService
         {
             var filters = FilterHelper.GetFilters(usersDto.Filter);
 
+            var expressions = new List<Expression<Func<ApplicationUser, bool>>>();
+
             foreach (var filter in filters)
             {
-                var filteredExpression = FilterHelper.GetFilterExpression<ApplicationUser>(filter);
-                usersQueryable = usersQueryable.Where(filteredExpression);
+                expressions.Add(FilterHelper.GetFilterExpression<ApplicationUser>(filter));
             }
+            var combinedExpressions = FilterHelper.CombineExpressions(expressions, usersDto.Filter);
+
+            usersQueryable = usersQueryable.Where(combinedExpressions);
         }
+
 
         if (!string.IsNullOrEmpty(usersDto.Sorting))
         {

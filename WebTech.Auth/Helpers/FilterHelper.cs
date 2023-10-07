@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 using WebTech.Auth.Models.FilterModels;
 
 namespace WebTech.Auth.Helpers;
@@ -23,6 +24,46 @@ public static class FilterHelper
             .ToList();
 
         return filters;
+    }
+
+    public static Expression<Func<T, bool>> CombineExpressions<T>(List<Expression<Func<T, bool>>> expressions, string conditions)
+    {
+        if(conditions.Contains("~or~"))
+        {
+            for(var i = 0; i < expressions.Count; i++)
+            {
+                return expressions[i].Or(expressions[i + 1]);
+            }
+        }
+        else
+        {
+            for (var i = 0; i < expressions.Count; i++)
+            {
+                return expressions[i].And(expressions[i + 1]);
+            }
+        }
+        throw new Exception();
+    }
+
+
+    public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    {
+        if (left == null) return right;
+        var and = Expression.AndAlso(left.Body, right.Body);
+        return Expression.Lambda<Func<T, bool>>(and, left.Parameters.Single());
+    }
+
+    public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    {
+        var type = typeof(T);
+        var param = Expression.Parameter(type, "x");
+
+        if (left == null) return right;
+        var or = Expression.OrElse(left.Body, right.Body);
+
+        var result = Expression.Lambda<Func<T, bool>>(or, param);
+
+        return result;
     }
 
     public static Expression<Func<T, bool>> GetFilterExpression<T>(FilterDefinition filter)
