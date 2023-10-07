@@ -1,12 +1,20 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using WebTech.Auth.ErrorHandler.CustomExceptions;
 using WebTech.Auth.Models.FilterModels;
 
 namespace WebTech.Auth.Helpers;
 
 public static class FilterHelper
 {
-    public static List<FilterDefinition> GetFilters(string conditions)
+    public static IQueryable<T> GetFiltered<T>(IQueryable<T> queryable, string filterCriteria)
+    {
+        var filters = GetFilters(filterCriteria);
+        var combinedExpressions = CombineExpressions<T>(filters, filterCriteria);
+        
+        return queryable.Where(combinedExpressions);
+    }
+
+    private static List<FilterDefinition> GetFilters(string conditions)
     {
         var parts = conditions.Split(new[] { "~and~", "~or~" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -26,47 +34,50 @@ public static class FilterHelper
         return filters;
     }
 
-    public static Expression<Func<T, bool>> CombineExpressions<T>(List<Expression<Func<T, bool>>> expressions, string conditions)
+    private static Expression<Func<T, bool>> CombineExpressions<T>(
+        List<FilterDefinition> filters, string conditions)
     {
-        if(conditions.Contains("~or~"))
+        var filterExpressions = new Expression<Func<T, bool>>[filters.Count];
+
+        for (int i = 0; i < filters.Count; i++)
         {
-            for(var i = 0; i < expressions.Count; i++)
-            {
-                return expressions[i].Or(expressions[i + 1]);
-            }
+            filterExpressions[i] = GetFilterExpression<T>(filters[i]);
+        }
+
+        if (conditions.Contains("~or~"))
+        {
+            return filterExpressions[0].Or(filterExpressions[1]);
         }
         else
         {
-            for (var i = 0; i < expressions.Count; i++)
-            {
-                return expressions[i].And(expressions[i + 1]);
-            }
+            return filterExpressions[0].And(filterExpressions[1]);
         }
-        throw new Exception();
+        throw new CriticalServerException();
     }
 
-
-    public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    private static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
     {
-        if (left == null) return right;
-        var and = Expression.AndAlso(left.Body, right.Body);
-        return Expression.Lambda<Func<T, bool>>(and, left.Parameters.Single());
+        var param = Expression.Parameter(typeof(T), "x");
+        var and = Expression.AndAlso(
+                Expression.Invoke(left, param),
+                Expression.Invoke(right, param)
+            );
+        var lambda = Expression.Lambda<Func<T, bool>>(and, param);
+        return lambda;
     }
 
-    public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    private static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
     {
-        var type = typeof(T);
-        var param = Expression.Parameter(type, "x");
-
-        if (left == null) return right;
-        var or = Expression.OrElse(left.Body, right.Body);
-
-        var result = Expression.Lambda<Func<T, bool>>(or, param);
-
-        return result;
+        var param = Expression.Parameter(typeof(T), "x");
+        var or = Expression.OrElse(
+                Expression.Invoke(left, param),
+                Expression.Invoke(right, param)
+            );
+        var lambda = Expression.Lambda<Func<T, bool>>(or, param);
+        return lambda;
     }
 
-    public static Expression<Func<T, bool>> GetFilterExpression<T>(FilterDefinition filter)
+    private static Expression<Func<T, bool>> GetFilterExpression<T>(FilterDefinition filter)
     {
         var type = typeof(T);
         var param = Expression.Parameter(type, "x");
@@ -116,7 +127,7 @@ public static class FilterHelper
         return Expression.Lambda<Func<T, bool>>(predicate, param);
     }
 
-    public static MemberExpression GetPropertyExpression(ParameterExpression param, string propertyName)
+    private static MemberExpression GetPropertyExpression(ParameterExpression param, string propertyName)
     {
         var parts = propertyName.Split('.');
         var propertyAccess = Expression.Property(param, parts[0]);
@@ -137,7 +148,7 @@ public static class FilterHelper
         if (propertyType == typeof(int))
             return int.Parse(value);
 
-        if(propertyType == typeof(float))
+        if (propertyType == typeof(float))
             return float.Parse(value);
 
         if (propertyType == typeof(double))
