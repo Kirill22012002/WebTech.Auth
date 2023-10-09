@@ -5,6 +5,13 @@ namespace WebTech.Auth.Helpers;
 
 public static class FilterHelper
 {
+    /// <summary>
+    /// Applies filters to an IQueryable based on filter criteria.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the IQueryable</typeparam>
+    /// <param name="queryable">The IQueryable to filter.</param>
+    /// <param name="filterCriteria">The filter criteria in string format.</param>
+    /// <returns>An IQueryable with applied filters.</returns>
     public static IQueryable<T> GetFiltered<T>(IQueryable<T> queryable, string filterCriteria)
     {
         var filters = GetFilters(filterCriteria);
@@ -36,37 +43,25 @@ public static class FilterHelper
     private static Expression<Func<T, bool>> CombineExpressions<T>(
         List<FilterDefinition> filters, string conditions)
     {
-        if(filters.Count() > 1)
+        if(filters.Count == 0)
         {
-            var filterExpressions = new Expression<Func<T, bool>>[filters.Count];
-            
-            for (int i = 0; i < filters.Count; i++)
-            {
-                filterExpressions[i] = GetFilterExpression<T>(filters[i]);
-            }
+            throw new ArgumentException("The 'filter' list must contain at least one filter");
+        }
 
-            if (conditions.Contains("~or~"))
-            {
-                for (int i = 1; i < filterExpressions.Length; i++)
-                {
-                    filterExpressions[0] = filterExpressions[i - 1].Or(filterExpressions[i]);
-                }
+        if(filters.Count == 1)
+        {
+            return GetFilterExpression<T>(filters[0]);
+        }
 
-                return filterExpressions[0];
-            }
-            else
-            {
-                for (int i = 0; i < filterExpressions.Length; i++)
-                {
-                    filterExpressions[0] = filterExpressions[i].And(filterExpressions[i + 1]);
-                }
+        var filterExpressions = filters.Select(GetFilterExpression<T>).ToArray();
 
-                return filterExpressions[0];
-            }
+        if (conditions.Contains("~or~"))
+        {
+            return filterExpressions.Aggregate((expr1, expr2) => expr1.Or(expr2));
         }
         else
         {
-            return GetFilterExpression<T>(filters[0]);
+            return filterExpressions.Aggregate((expr1, expr2) => expr1.And(expr2));
         }
     }
 
