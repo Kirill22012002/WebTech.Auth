@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebTech.Auth.Data.Models;
@@ -47,13 +48,13 @@ public class UserService : IUserService
             .Take(usersDto.MaxResultCount)
             .ToList();
 
-        return _mapper.Map<IEnumerable<UserViewModel>>(users);
+        return MapUsersToViewModelsAsync(users);
     }
 
     public async Task<UserViewModel> GetUserByIdAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
-        return _mapper.Map<UserViewModel>(user);
+        return MapUserToViewModelsAsync(user);
     }
 
     public async Task<AuthServiceDto> CreateUserAsync(CreateUserInput userInput)
@@ -132,5 +133,33 @@ public class UserService : IUserService
         }
 
         return usersQueryable;
+    }
+
+    private IEnumerable<UserViewModel> MapUsersToViewModelsAsync(IEnumerable<ApplicationUser> users)
+    {
+        IEnumerable<UserViewModel> userViewModels = users.Select(user => new UserViewModel
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Age = user.Age,
+            Roles = _userManager.GetRolesAsync(user).Result
+        });
+
+        return userViewModels;
+    }
+
+    private UserViewModel MapUserToViewModelsAsync(ApplicationUser user)
+    {
+        var userViewModel = new UserViewModel
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Age = user.Age,
+            Roles = _userManager.GetRolesAsync(user).Result
+        };
+
+        return userViewModel;
     }
 }
