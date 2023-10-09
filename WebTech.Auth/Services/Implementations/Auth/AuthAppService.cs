@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using WebTech.Auth.Data.Models;
+using WebTech.Auth.ErrorHandler.CustomExceptions;
 using WebTech.Auth.Models.Dtos;
 using WebTech.Auth.Models.Inputs;
 using WebTech.Auth.Services.Interfaces.Auth;
@@ -19,9 +20,9 @@ public class AuthAppService : IAuthAppService
         _roleManager = roleManager;
     }
 
-    public async Task<AuthServiceDto> SignUp(UserSignUpInput signUpRequest)
+    public async Task<AuthServiceDto> SignUpAsync(UserSignUpInput signUpRequest)
     {
-        var user = new ApplicationUser() { Email = signUpRequest.Email, UserName = signUpRequest.UserName };
+        var user = new ApplicationUser() { Email = signUpRequest.Email, Name = signUpRequest.Name };
         var registrationResult = await _userManager.CreateAsync(user, signUpRequest.Password);
 
         if (registrationResult.Succeeded)
@@ -53,5 +54,30 @@ public class AuthAppService : IAuthAppService
             Success = false,
             ErrorMessage = errorMessage
         };
+    }
+
+    public async Task<IdentityResult> ChangeUserInfoAsync(string userId, ChangeUserInfoInputByUser userInfoInput)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if(user == null)
+        {
+            throw new ClientException("user_not_found", 400);
+        }
+
+        if(!string.IsNullOrWhiteSpace(userInfoInput.Name) && userInfoInput.Name?.Trim() != user.Name)
+        {
+            user.Name = userInfoInput.Name;
+        }
+        if(userInfoInput.Email?.Trim() != user.Email)
+        {
+            user.Email = userInfoInput.Email;
+        }
+        if(userInfoInput.Age != user.Age)
+        {
+            user.Age = userInfoInput.Age;
+        }
+
+        return await _userManager.UpdateAsync(user);
     }
 }
