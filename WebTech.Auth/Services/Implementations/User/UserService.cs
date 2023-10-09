@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using WebTech.Auth.Data.Models;
 using WebTech.Auth.ErrorHandler.CustomExceptions;
 using WebTech.Auth.Helpers;
@@ -29,7 +30,7 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserViewModel>> GetUsersAsync(GetUsersDto usersDto)
     {
-        var usersQueryable = await GetUsersAsQueryable();
+        var usersQueryable = await GetUsersWithRolesAsQueryable(usersDto.Roles);
 
         if (!string.IsNullOrEmpty(usersDto.Filter))
         {
@@ -62,7 +63,7 @@ public class UserService : IUserService
 
         if (registrationResult.Succeeded)
         {
-            var role = await _roleManager.FindByNameAsync("User");
+            var role = await _roleManager.FindByNameAsync(userInput.Role);
             var roleAddingResult = await _userManager.AddToRoleAsync(user, role.Name);
 
             if (!roleAddingResult.Succeeded)
@@ -116,11 +117,20 @@ public class UserService : IUserService
         return await _userManager.UpdateAsync(user);
     }
 
-    private async Task<IQueryable<ApplicationUser>> GetUsersAsQueryable()
+    private async Task<IQueryable<ApplicationUser>> GetUsersWithRolesAsQueryable(string[] roles)
     {
-        return await Task.Run(() =>
+        var usersQueryable = _userManager.Users.AsQueryable();
+
+        if (roles != null)
         {
-            return _userManager.Users.AsQueryable();
-        });
+            foreach (var role in roles)
+            {
+                var usersInRole = await _userManager.GetUsersInRoleAsync(role);
+                var usersIdsInRole = usersInRole.Select(user => user.Id);
+                usersQueryable = usersQueryable.Where(user => usersIdsInRole.Contains(user.Id));
+            }
+        }
+
+        return usersQueryable;
     }
 }
