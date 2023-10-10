@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebTech.Auth.Data.Models;
@@ -118,6 +117,40 @@ public class UserService : IUserService
         return await _userManager.UpdateAsync(user);
     }
 
+    public async Task<IEnumerable<RoleViewModel>> GetAllRolesAsync()
+    {
+        IEnumerable<IdentityRole> roles =  await _roleManager.Roles.ToListAsync();
+        return _mapper.Map<IEnumerable<RoleViewModel>>(roles);
+    }
+
+    public async Task<IdentityResult> AddRoleToUserAsync(AddRoleToUserDto dto)
+    {
+        var role = _roleManager.FindByIdAsync(dto.RoleId).Result;
+        if(role == null)
+        {
+            throw new ClientException("role_not_found", 400);
+        }
+
+        var user = await _userManager.FindByIdAsync(dto.UserId);
+        if(user == null)
+        {
+            throw new ClientException("user_not_found", 400);
+        }
+
+        var result = await _userManager.AddToRoleAsync(user, role.ToString());
+
+        return result;
+    }
+
+    public async Task<IdentityResult> RemoveUserAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        IEnumerable<string> roles = await _userManager.GetRolesAsync(user);
+
+        var result = await _userManager.RemoveFromRolesAsync(user, roles);
+        return result;
+    }
+
     private async Task<IQueryable<ApplicationUser>> GetUsersWithRolesAsQueryable(string[] roles)
     {
         var usersQueryable = _userManager.Users.AsQueryable();
@@ -162,4 +195,5 @@ public class UserService : IUserService
 
         return userViewModel;
     }
+
 }

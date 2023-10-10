@@ -11,4 +11,7 @@ public interface IUserService
     public Task<UserViewModel> GetUserByIdAsync(string userId);
     public Task<AuthServiceDto> CreateUserAsync(CreateUserInput userInput);
     public Task<IdentityResult> ChangeUserInfoAsync(ChangeUserInfoInput userInfoInput);
+    public Task<IEnumerable<RoleViewModel>> GetAllRolesAsync();
+    public Task<IdentityResult> AddRoleToUserAsync(AddRoleToUserDto dto);
+    public Task<IdentityResult> RemoveUserAsync(string userId);
 }
