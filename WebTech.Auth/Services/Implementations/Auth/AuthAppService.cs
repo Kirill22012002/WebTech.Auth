@@ -22,8 +22,8 @@ public class AuthAppService : IAuthAppService
 
     public async Task<AuthServiceDto> SignUpAsync(UserSignUpInput signUpRequest)
     {
-        if (string.IsNullOrWhiteSpace(signUpRequest.Name) || string.IsNullOrWhiteSpace(signUpRequest.Email) || signUpRequest.Age <= 0)
-            throw new ClientException("Name, Email, and Age are required fields.", 400);
+        if (string.IsNullOrWhiteSpace(signUpRequest.Name) || string.IsNullOrWhiteSpace(signUpRequest.Email))
+            throw new ClientException("Name and Email are required fields.", 400);
 
         var existingUser = await _userManager.FindByEmailAsync(signUpRequest.Email);
         if (existingUser != null)
@@ -65,6 +65,20 @@ public class AuthAppService : IAuthAppService
 
     public async Task<IdentityResult> ChangeUserInfoAsync(string userId, ChangeUserInfoInputByUser userInfoInput)
     {
+        if (string.IsNullOrWhiteSpace(userInfoInput.Name) || string.IsNullOrWhiteSpace(userInfoInput.Email) || userInfoInput.Age <= 0)
+        {
+            throw new ClientException("Name, Email, and Age are required fields.", 400);
+        }
+        var existingUser = await _userManager.FindByEmailAsync(userInfoInput.Email);
+        if (existingUser != null)
+        {
+            throw new ClientException("Email is already in use.", 400);
+        }
+        if (userInfoInput.Age <= 0)
+        {
+            throw new ClientException("Age must be a positive number.", 400);
+        }
+
         var user = await _userManager.FindByIdAsync(userId);
 
         if(user == null)

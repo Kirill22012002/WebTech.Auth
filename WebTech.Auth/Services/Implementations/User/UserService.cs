@@ -108,6 +108,20 @@ public class UserService : IUserService
 
     public async Task<IdentityResult> ChangeUserInfoAsync(ChangeUserInfoInput userInfoInput)
     {
+        if (string.IsNullOrWhiteSpace(userInfoInput.Name) || string.IsNullOrWhiteSpace(userInfoInput.Email) || userInfoInput.Age <= 0)
+        {
+            throw new ClientException("Name, Email, and Age are required fields.", 400);
+        }
+        var existingUser = await _userManager.FindByEmailAsync(userInfoInput.Email);
+        if (existingUser != null)
+        {
+            throw new ClientException("Email is already in use.", 400);
+        }
+        if (userInfoInput.Age <= 0)
+        {
+            throw new ClientException("Age must be a positive number.", 400);
+        }
+
         var user = await _userManager.FindByIdAsync(userInfoInput.UserId);
 
         if (user == null)
