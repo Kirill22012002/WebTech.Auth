@@ -5,6 +5,7 @@ using WebTech.Auth.Controllers.Base;
 using WebTech.Auth.Models.Dtos;
 using Swashbuckle.AspNetCore.Annotations;
 using WebTech.Auth.Models.ViewModels;
+using WebTech.Auth.Controllers.Responses;
 
 namespace WebTech.Auth.Controllers;
 

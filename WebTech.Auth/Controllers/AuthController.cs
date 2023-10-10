@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebTech.Auth.Controllers.Base;
+using WebTech.Auth.Controllers.Responses;
 using WebTech.Auth.Models.Inputs;
 using WebTech.Auth.Services.Interfaces.Auth;
 
