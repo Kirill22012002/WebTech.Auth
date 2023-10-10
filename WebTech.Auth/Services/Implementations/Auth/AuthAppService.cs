@@ -22,6 +22,13 @@ public class AuthAppService : IAuthAppService
 
     public async Task<AuthServiceDto> SignUpAsync(UserSignUpInput signUpRequest)
     {
+        if (string.IsNullOrWhiteSpace(signUpRequest.Name) || string.IsNullOrWhiteSpace(signUpRequest.Email) || signUpRequest.Age <= 0)
+            throw new ClientException("Name, Email, and Age are required fields.", 400);
+
+        var existingUser = await _userManager.FindByEmailAsync(signUpRequest.Email);
+        if (existingUser != null)
+            throw new ClientException("Email is already in use.", 400);
+
         var user = new ApplicationUser() { Email = signUpRequest.Email, Name = signUpRequest.Name };
         var registrationResult = await _userManager.CreateAsync(user, signUpRequest.Password);
 
@@ -62,7 +69,7 @@ public class AuthAppService : IAuthAppService
 
         if(user == null)
         {
-            throw new ClientException("user_not_found", 400);
+            throw new ClientException("User not found", 404);
         }
 
         if(!string.IsNullOrWhiteSpace(userInfoInput.Name) && userInfoInput.Name?.Trim() != user.Name)

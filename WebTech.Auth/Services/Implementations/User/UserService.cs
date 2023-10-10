@@ -58,6 +58,20 @@ public class UserService : IUserService
 
     public async Task<AuthServiceDto> CreateUserAsync(CreateUserInput userInput)
     {
+        if (string.IsNullOrWhiteSpace(userInput.Name) || string.IsNullOrWhiteSpace(userInput.Email) || userInput.Age <= 0)
+        {
+            throw new ClientException("Name, Email, and Age are required fields.", 400);
+        }
+        var existingUser = await _userManager.FindByEmailAsync(userInput.Email);
+        if (existingUser != null)
+        {
+            throw new ClientException("Email is already in use.", 400);
+        }
+        if (userInput.Age <= 0)
+        {
+            throw new ClientException("Age must be a positive number.", 400);
+        }
+
         var user = _mapper.Map<ApplicationUser>(userInput);
         var registrationResult = await _userManager.CreateAsync(user, userInput.Password);
 
@@ -98,7 +112,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
-            throw new ClientException("user_not_found", 400);
+            throw new ClientException("User not found", 404);
         }
 
         if (!string.IsNullOrWhiteSpace(userInfoInput.Name) && userInfoInput.Name?.Trim() != user.Name)
@@ -128,13 +142,13 @@ public class UserService : IUserService
         var role = _roleManager.FindByIdAsync(dto.RoleId).Result;
         if(role == null)
         {
-            throw new ClientException("role_not_found", 400);
+            throw new ClientException("Role not found", 404);
         }
 
         var user = await _userManager.FindByIdAsync(dto.UserId);
         if(user == null)
         {
-            throw new ClientException("user_not_found", 400);
+            throw new ClientException("User not found", 404);
         }
 
         var result = await _userManager.AddToRoleAsync(user, role.ToString());
