@@ -28,6 +28,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDependencies();
 builder.Services.AddHttpContextAccessor();
 
+if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+{
+    logger.LogInformation(DbExtension.GetConnectionString()); ;
+}
 
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddAutoMapper();
