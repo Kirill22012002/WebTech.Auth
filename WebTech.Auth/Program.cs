@@ -6,10 +6,9 @@ using WebTech.Auth.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.ConfigureLogging(logging =>
+builder.Services.AddLogging(builder =>
 {
-    logging.ClearProviders();
-    logging.AddConsole();
+    builder.AddConsole();
 });
 
 using var loggerFactory = LoggerFactory.Create(builder =>
@@ -18,6 +17,8 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 });
 
 var logger = loggerFactory.CreateLogger<Program>();
+
+logger.LogInformation("------------------------------------here we conect controllers-------------------------------------------");
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -28,9 +29,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDependencies();
 builder.Services.AddHttpContextAccessor();
 
-logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString()}");
-logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString("ConfigurationStore")}");
-logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString("OperationalStore")}");
+if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+{
+    logger.LogInformation(DbExtension.GetConnectionString()); ;
+}
 
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddAutoMapper();
@@ -64,7 +66,7 @@ app.UseCors(options =>
     options.AllowAnyMethod();
 });
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseIdentityServer();
 app.UseAuthorization();
