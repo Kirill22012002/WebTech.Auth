@@ -1,1 +1,1 @@
-web: dotnet WebTech.Auth/WebTech.Auth.dll
+web: /app/.heroku/dotnet ./WebTech.Auth/WebTech.Auth.dll
