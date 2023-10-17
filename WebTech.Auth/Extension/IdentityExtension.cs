@@ -57,5 +57,4 @@ public static class IdentityExtension
             .AddEntityFrameworkStores<AccessDbContext>()
             .AddDefaultTokenProviders();
     }
-
 }

@@ -6,10 +6,9 @@ using WebTech.Auth.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.ConfigureLogging(logging =>
+builder.Services.AddLogging(builder =>
 {
-    logging.ClearProviders();
-    logging.AddConsole();
+    builder.AddConsole();
 });
 
 using var loggerFactory = LoggerFactory.Create(builder =>
@@ -18,6 +17,8 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 });
 
 var logger = loggerFactory.CreateLogger<Program>();
+
+logger.LogInformation("------------------------------------here we conect controllers-------------------------------------------");
 
 // Add services to the container.
 builder.Services.AddControllers();
