@@ -1,4 +1,5 @@
 ﻿using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.Extensions;
 using Microsoft.EntityFrameworkCore;
 using WebTech.Auth.Data.Context;
 using WebTech.Auth.Data.DataSeeder;
@@ -49,7 +50,7 @@ public static class DbExtension
         dbSeed?.SeedAsync().Wait();
     }
 
-    public static string GetConnectionString()
+    public static string GetConnectionString(string nameOfDatabase = "")
     {
         var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
@@ -62,6 +63,13 @@ public static class DbExtension
         var host = hostSide.Split("/")[0];
         var database = hostSide.Split("/")[1].Split("?")[0];
 
-        return $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        if (nameOfDatabase.IsNullOrEmpty())
+        {
+            return $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        }
+        else
+        {
+            return $"Host={host};Database={database}.{nameOfDatabase};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        }
     }
 }
