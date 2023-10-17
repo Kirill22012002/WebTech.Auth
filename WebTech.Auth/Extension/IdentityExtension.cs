@@ -11,31 +11,28 @@ public static class IdentityExtension
     {
         var migrationsAssembly = typeof(IdentityExtension).Assembly.GetName().Name;
 
-        string confStoreConnectionString;
-        string operStoreConnectionString;
+        string connectionString;
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
         {
-            confStoreConnectionString = DbExtension.GetConnectionString("ConfigurationStore");
-            operStoreConnectionString = DbExtension.GetConnectionString("OperationalStore");
+            connectionString = DbExtension.GetConnectionString();
         }
         else
         {
-            confStoreConnectionString = builder.Configuration.GetConnectionString("ConfigurationStore");
-            operStoreConnectionString = builder.Configuration.GetConnectionString("OperationalStore");
+            connectionString = builder.Configuration.GetConnectionString("LocalDatabase");
         }
 
         builder.Services.AddIdentityServer()
             .AddConfigurationStore(options =>
             {
                 options.ConfigureDbContext = b =>
-                    b.UseNpgsql(confStoreConnectionString,
+                    b.UseNpgsql(connectionString,
                         sql => sql.MigrationsAssembly(migrationsAssembly));
             })
             .AddOperationalStore(options =>
             {
                 options.ConfigureDbContext = b =>
-                    b.UseNpgsql(operStoreConnectionString,
+                    b.UseNpgsql(connectionString,
                         sql => sql.MigrationsAssembly(migrationsAssembly));
             })
             .AddAspNetIdentity<ApplicationUser>()

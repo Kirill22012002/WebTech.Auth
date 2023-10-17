@@ -29,8 +29,6 @@ builder.Services.AddDependencies();
 builder.Services.AddHttpContextAccessor();
 
 logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString()}");
-logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString("ConfigurationStore")}");
-logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString("OperationalStore")}");
 
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddAutoMapper();

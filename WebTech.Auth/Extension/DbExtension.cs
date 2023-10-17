@@ -15,13 +15,13 @@ public static class DbExtension
 
         string connectionString;
 
-        if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
         {
             connectionString = GetConnectionString();
         }
         else
         {
-            connectionString = configuration.GetConnectionString("UsersDatabase");
+            connectionString = configuration.GetConnectionString("LocalDatabase");
         }
 
         services.AddDbContext<AccessDbContext>(options =>
@@ -50,7 +50,7 @@ public static class DbExtension
         dbSeed?.SeedAsync().Wait();
     }
 
-    public static string GetConnectionString(string nameOfDatabase = "")
+    public static string GetConnectionString()
     {
         var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
@@ -63,13 +63,6 @@ public static class DbExtension
         var host = hostSide.Split("/")[0];
         var database = hostSide.Split("/")[1].Split("?")[0];
 
-        if (nameOfDatabase.IsNullOrEmpty())
-        {
-            return $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
-        }
-        else
-        {
-            return $"Host={host};Database={database}.{nameOfDatabase};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
-        }
+        return $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
     }
 }
