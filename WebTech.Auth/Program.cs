@@ -1,9 +1,23 @@
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.IdentityModel.Logging;
 using WebTech.Auth;
 using WebTech.Auth.ErrorHandler;
 using WebTech.Auth.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.ConfigureLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+});
+
+using var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddSimpleConsole(i => i.ColorBehavior = LoggerColorBehavior.Disabled);
+});
+
+var logger = loggerFactory.CreateLogger<Program>();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -13,6 +27,11 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddDependencies();
 builder.Services.AddHttpContextAccessor();
+
+logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString()}");
+logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString("ConfigurationStore")}");
+logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString("OperationalStore")}");
+
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddAutoMapper();
 
