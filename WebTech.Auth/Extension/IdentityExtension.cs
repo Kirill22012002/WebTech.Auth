@@ -28,14 +28,12 @@ public static class IdentityExtension
         builder.Services.AddIdentityServer()
             .AddConfigurationStore(options =>
             {
-                //dotnet ef migrations add InitialCreate --context ConfigurationDbContext --output-dir Data/Migrations/ConfigurationStore
                 options.ConfigureDbContext = b =>
                     b.UseNpgsql(confStoreConnectionString,
                         sql => sql.MigrationsAssembly(migrationsAssembly));
             })
             .AddOperationalStore(options =>
             {
-                //dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --output-dir Data/Migrations/PersistedGrant
                 options.ConfigureDbContext = b =>
                     b.UseNpgsql(operStoreConnectionString,
                         sql => sql.MigrationsAssembly(migrationsAssembly));
