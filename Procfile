@@ -1,1 +1,1 @@
-web: dotnet WebTech.Auth.dll
+web: dotnet WebTech.Auth/WebTech.Auth.dll
