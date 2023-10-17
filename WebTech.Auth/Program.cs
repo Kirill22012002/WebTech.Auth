@@ -28,7 +28,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDependencies();
 builder.Services.AddHttpContextAccessor();
 
-logger.LogInformation($"_---------------------- this is connection string for db {DbExtension.GetConnectionString()}");
 
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddAutoMapper();
