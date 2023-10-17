@@ -16,8 +16,8 @@ public static class IdentityExtension
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
         {
-            confStoreConnectionString = DbExtension.GetConnectionString();
-            operStoreConnectionString = DbExtension.GetConnectionString();
+            confStoreConnectionString = DbExtension.GetConnectionString("ConfigurationStore");
+            operStoreConnectionString = DbExtension.GetConnectionString("OperationalStore");
         }
         else
         {
