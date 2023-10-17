@@ -52,7 +52,7 @@ public static class DbExtension
 
     public static string GetConnectionString()
     {
-        var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+        /*var connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
         connectionUrl = connectionUrl.Replace("postgres://", string.Empty);
         var userPassSide = connectionUrl.Split("@")[0];
@@ -61,8 +61,10 @@ public static class DbExtension
         var user = userPassSide.Split(":")[0];
         var password = userPassSide.Split(":")[1];
         var host = hostSide.Split("/")[0];
-        var database = hostSide.Split("/")[1].Split("?")[0];
+        var database = hostSide.Split("/")[1].Split("?")[0];*/
 
-        return $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        //return $"Host={host};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        return $"Host=ec2-34-251-233-253.eu-west-1.compute.amazonaws.com;Database=dc8kvfoqolibka;Username=zjusaeiisuipmt;Password=2f1496e657b1ff16ccb2b2351d80f6750c4245569137e30e0b2752ebd5e6d957;SSL Mode=Require;Trust Server Certificate=true";
+
     }
 }
